@@ -26,6 +26,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Log\LogManager;
+use Illuminate\Support\Collection;
 use Mockery as m;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -250,6 +251,20 @@ class ContextualAttributeBindingTest extends TestCase
         });
 
         $this->assertEquals([1, 2], iterator_to_array($value));
+    }
+
+    public function testTagAttributeWrapIntoClassString()
+    {
+        $container = new Container;
+        $container->bind('one', fn (): int => 1);
+        $container->bind('two', fn (): int => 2);
+        $container->tag(['one', 'two'], 'numbers');
+
+        $value = $container->call(function (#[Tag('numbers', Collection::class)] $integers) {
+            return $integers;
+        });
+
+        $this->assertEquals(new Collection([1, 2]), $value);
     }
 }
 

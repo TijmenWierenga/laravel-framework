@@ -11,8 +11,12 @@ use Illuminate\Contracts\Container\ContextualAttribute;
 #[Attribute(Attribute::TARGET_PARAMETER)]
 final class Tag implements ContextualAttribute
 {
+    /**
+     * @param class-string|null $wrapInto
+     */
     public function __construct(
         public string $tag,
+        public ?string $wrapInto = null
     ) {
     }
 
@@ -25,6 +29,12 @@ final class Tag implements ContextualAttribute
      */
     public static function resolve(self $attribute, Container $container)
     {
-        return $container->tagged($attribute->tag);
+        $tagged = $container->tagged($attribute->tag);
+
+        if ($attribute->wrapInto) {
+            return new $attribute->wrapInto($tagged);
+        }
+
+        return $tagged;
     }
 }
